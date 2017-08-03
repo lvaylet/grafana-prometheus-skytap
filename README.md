@@ -6,7 +6,7 @@
 git clone https://github.com/lvaylet/grafana-prometheus-skytap.git
 cd grafana-prometheus-skytap
 docker-compose up  # to display the logs in the console
-docker-compose up -d . # to run the container as a daemon
+docker-compose up -d  # to run the container as a daemon
 ```
 
 Log in to `http://localhost:3000` as `admin/pass`, then start adding data sources and dashboards.
