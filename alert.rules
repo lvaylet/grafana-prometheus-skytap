@@ -1,9 +1,23 @@
-ALERT service_down
-  IF up == 0
 
-ALERT high_load
-  IF node_load1 > 0.5
+ALERT InstanceDown
+  IF up == 0
+  FOR 5m
+  LABELS { severity = "page" }
+  ANNOTATIONS {
+    summary = "Instance {{ $labels.instance }} down",
+    description = "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.",
+  }
+
+ALERT HighLoad
+  IF node_load1 > 0.8
   ANNOTATIONS {
     summary = "Instance {{ $labels.instance }} under high load",
     description = "{{ $labels.instance }} of job {{ $labels.job }} is under high load.",
+  }
+
+ALERT SkytapStorageLow
+  IF skytap_usage_concurrent_storage_size{type="usage"} > skytap_usage_concurrent_storage_size{type="limit"}*0.8
+  ANNOTATIONS {
+    summary = "Instance {{ $labels.region }} storage low",
+    description = "{{ $labels.instance }} in region {{ $labels.region }} is low on storage.",
   }
