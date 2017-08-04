@@ -14,7 +14,6 @@ Options:
   --version              Show version.
   --endpoint=<endpoint>  REST API endpoint to poll [default: http://10.42.100.179:5050/api/skytap/usage].
   --port=<port>          Port to start HTTP server on [default: 9118].
-  --interval=<interval>  Polling interval, in seconds [default: 1800].
 """
 import json
 import re
@@ -74,7 +73,6 @@ if __name__ == "__main__":
     arguments = docopt(__doc__)
     rest_api_endpoint = arguments['--endpoint']
     http_server_port = int(arguments['--port'])
-    polling_interval_seconds = int(arguments['--interval'])
 
     # Add custom collector to Prometheus registry
     REGISTRY.register(SkytapUsageCollector(rest_api_endpoint))
@@ -82,6 +80,5 @@ if __name__ == "__main__":
     # Start HTTP server to expose metrics
     start_http_server(http_server_port)
 
-    # Poll REST API
     while True:
-        time.sleep(polling_interval_seconds)
+        time.sleep(1)
