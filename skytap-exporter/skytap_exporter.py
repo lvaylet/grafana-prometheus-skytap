@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# coding: utf-8
 
 """
 Skytap Exporter for Prometheus.
@@ -14,15 +14,8 @@ Options:
   --version              Show version.
   --endpoint=<endpoint>  REST API endpoint to poll [default: http://10.42.100.179:5050/api/skytap/usage].
   --port=<port>          Port to start HTTP server on [default: 9118].
-  --interval=<interval>  Polling interval, in seconds [default: 10].
-
-References:
-  https://www.robustperception.io/writing-json-exporters-in-python/
-  https://www.robustperception.io/writing-a-jenkins-exporter-in-python/
-  https://github.com/RobustPerception/python_examples/blob/master/jenkins_exporter/jenkins_exporter.py
-  https://github.com/prometheus/client_python#custom-collectors
+  --interval=<interval>  Polling interval, in seconds [default: 1800].
 """
-
 import json
 import re
 import time
@@ -72,13 +65,18 @@ class SkytapUsageCollector(object):
 
 
 if __name__ == "__main__":
+    # Parse script arguments
     arguments = docopt(__doc__)
+    rest_api_endpoint = arguments['--endpoint']
+    http_server_port = int(arguments['--port'])
+    polling_interval_seconds = int(arguments['--interval'])
 
-    REGISTRY.register(SkytapUsageCollector(arguments['--endpoint']))
+    # Add custom collector to Prometheus registry
+    REGISTRY.register(SkytapUsageCollector(rest_api_endpoint))
 
     # Start HTTP server to expose metrics
-    start_http_server(int(arguments['--port']))
+    start_http_server(http_server_port)
 
     # Poll REST API
     while True:
-        time.sleep(int(arguments['--interval']))
+        time.sleep(polling_interval_seconds)
