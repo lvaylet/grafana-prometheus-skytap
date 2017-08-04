@@ -32,7 +32,7 @@ services:
       python skytap_exporter.py
         --endpoint=http://10.42.100.179:5050/api/skytap/usage
         --port=9118
-        --interval=1800
+        --interval=300
 
   grafana:
     image: grafana/grafana:4.4.2
