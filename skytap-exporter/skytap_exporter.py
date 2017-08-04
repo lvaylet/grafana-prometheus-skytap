@@ -31,37 +31,42 @@ class SkytapUsageCollector(object):
         self._target = target.rstrip("/")
 
     def collect(self):
-        # The regional statistics to be exported.
-        statistics = {'concurrent_svms': 'Concurrent SVMs',
-                      'concurrent_storage_size': 'Concurrent Storage Size'}
+        # Define regional statistics to export
+        statistics = {
+            'concurrent_svms':         'Concurrent SVMs',
+            'concurrent_storage_size': 'Concurrent Storage Size',
+            'concurrent_vms':          'Concurrent VMs',
+            'cumulative_svms':         'Cumulative SVM Hours',
+        }
 
-        # The metrics to be exported.
+        # Initialize metrics
         metrics = {}
         for stat_key, stat_name in statistics.items():
-            snake_case = re.sub('([A-Z])', '_\\1', stat_key).lower()
-            metrics[stat_key] = {
-                'usage':
-                    GaugeMetricFamily('skytap_usage_{0}_usage'.format(snake_case),
-                                      'Regional {0} usage'.format(stat_name), labels=["region"]),
-                'limit':
-                    GaugeMetricFamily('skytap_usage_{0}_limit'.format(snake_case),
-                                      'Regional {0} limit'.format(stat_name), labels=["region"]),
-            }
+            stat_key_snake_case = re.sub('([A-Z])', '_\\1', stat_key).lower()
+            metrics[stat_key] = GaugeMetricFamily(name=f'skytap_usage_{stat_key_snake_case}',
+                                                  documentation=f'{stat_name}',
+                                                  labels=["type", "region"])
 
         # Request usage statistics from Skytap REST API
+        # TODO Handle HTTP errors gracefully
         result = json.load(urllib.request.urlopen(self._target))
 
+        # Save metrics
         for region_name, region_data in result.items():
-            name = region_name
             for stat_key, _ in statistics.items():
-                # Export zeros for null results.
-                status = region_data[stat_key] or {}
-                metrics[stat_key]['usage'].add_metric([name], status.get('usage', 0.0) or 0.0)  # status.get('usage', 0.0) can be None
-                metrics[stat_key]['limit'].add_metric([name], status.get('limit', 0.0) or 0.0)  # status.get('limit', 0.0) can be None
+                # Gracefully handle missing keys or values with `or` and `try..except`
+                try:
+                    data = region_data[stat_key] or {}
+                except KeyError:
+                    data = {}
+                # Export zeros for null results
+                for type_key in ["usage", "limit"]:
+                    metrics[stat_key].add_metric(labels=[type_key, region_name],
+                                                 value=data.get(type_key, 0.0) or 0.0)  # data.get('usage', 0.0) can be None
 
+        # Yield metrics
         for stat_key in statistics:
-            for m in metrics[stat_key].values():
-                yield m
+            yield metrics[stat_key]
 
 
 if __name__ == "__main__":
