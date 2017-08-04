@@ -18,6 +18,10 @@ Log in to `http://localhost:3000` as `admin/pass`, then start adding data source
 
 Go to `http://localhost:9090` to access Prometheus and display the metrics.
 
+Reload Prometheus configuration with `curl -X POST http://localhost:9090/-/reload` when config files are updated ([source](https://www.robustperception.io/reloading-prometheus-configuration/)).
+
+Use `docker-compose up -d --no-deps --build <service_name>` to replace an existing container without tearing down the entire suite of containers ([source](http://staxmanade.com/2016/09/how-to-update-a-single-running-docker-compose-container/)).
+
 ## References
 
 - [Monitoring with Prometheus, Grafana & Docker](https://finestructure.co/blog/2016/5/16/monitoring-with-prometheus-grafana-docker-part-1)
